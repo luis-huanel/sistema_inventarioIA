@@ -1,0 +1,4 @@
+﻿id,nombre,marca,precio,cantidad,precio_x_cantidad,almacenamiento,ram,pantalla,bateria,camara,color,imagen
+1,Galaxy A15,Samsung,129990,6,779940,128 GB,4 GB,"6,5""",5000 mAh,50 MP + 5 MP + 2 MP,Negro,imagenes/Galaxy_A15_frente.png
+2,iPhone 13,Apple,599990,3,1799970,128 GB,4 GB,"6,1""",3240 mAh,12 MP + 12 MP,Rosa,imagenes/iPhone_13_frente.png
+3,Redmi Note 13,Xiaomi,159990,5,799950,128 GB,6 GB,"6,67""",5000 mAh,108 MP + 8 MP + 2 MP,Verde azulado,imagenes/Redmi_Note_13_frente.png

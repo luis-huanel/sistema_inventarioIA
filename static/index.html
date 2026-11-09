@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inventario de Celulares</title>
+<link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body>
+<header class="cabecera">
+  <div class="contenedor cabecera-in">
+    <div>
+      <p class="sup">Aplicaciones de Inteligencia Artificial · TI2082</p>
+      <h1>Inventario de celulares</h1>
+      <p class="sub">Distribuidora Austral del Estrecho SpA · Punta Arenas</p>
+    </div>
+    <nav>
+      <a href="/docs" class="btn btn-claro">Documentación de la API</a>
+    </nav>
+  </div>
+</header>
+
+<main class="contenedor">
+  <section class="kpis" aria-label="Resumen del inventario">
+    <div class="kpi"><span class="kpi-t">Total valorizado</span><strong id="k-total">–</strong></div>
+    <div class="kpi"><span class="kpi-t">Unidades en bodega</span><strong id="k-unidades">–</strong></div>
+    <div class="kpi"><span class="kpi-t">Modelos</span><strong id="k-modelos">–</strong></div>
+    <div class="kpi kpi-alerta"><span class="kpi-t">Equipos por revisar</span><strong id="k-revisar">–</strong></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-cab">
+      <h2>Catálogo y stock</h2>
+      <div class="barra">
+        <input id="buscar" type="search" placeholder="Buscar modelo o marca…" aria-label="Buscar">
+        <select id="filtro-marca" aria-label="Filtrar por marca"><option value="">Todas las marcas</option></select>
+        <button id="btn-nuevo" class="btn">+ Agregar celular</button>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table id="tabla">
+        <thead>
+          <tr><th>Imagen</th><th>Modelo</th><th>Marca</th><th class="num">Precio</th>
+              <th class="num">Cantidad</th><th class="num">Precio × cantidad</th><th>Acciones</th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot><tr><td colspan="5">Total</td><td class="num" id="pie-total">–</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <p id="vacio" class="vacio" hidden>No hay celulares que coincidan con la búsqueda.</p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-cab"><h2>Contar por fotografía</h2></div>
+    <p class="ayuda">Sube una foto del estante. El sistema encuentra los celulares, reconoce el modelo de cada uno y calcula el inventario.
+      Si la confianza es menor a 70 %, el equipo queda <em>por revisar</em>.</p>
+    <div class="barra">
+      <input id="foto" type="file" accept="image/*" aria-label="Foto del estante">
+      <button id="btn-analizar" class="btn">Analizar foto</button>
+      <button id="btn-ejemplo" class="btn btn-claro">Usar foto de ejemplo</button>
+    </div>
+    <div id="resultado" hidden>
+      <div class="res-grid">
+        <figure class="marco"><img id="img-anotada" alt="Foto analizada con los recuadros"></figure>
+        <div>
+          <div class="chips" id="chips"></div>
+          <table class="mini" id="tabla-conteo">
+            <thead><tr><th>Modelo</th><th class="num">Cantidad detectada</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p id="nota-metodo" class="ayuda"></p>
+          <button id="btn-aplicar" class="btn">Aplicar este conteo al inventario</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ============ LECTURA OCR DE CAJAS (imagenes y PDF) ============
+       Cada imagen y cada pagina de PDF es UNA caja independiente.
+       Flujo: elegir archivos -> "Leer cajas" (POST /api/ocr, vista previa)
+       -> revisar una tarjeta por caja -> "Ingresar" (POST /api/ocr con aplicar=1). -->
+  <section class="panel" id="seccion-ocr">
+    <div class="panel-cab"><h2>Leer cajas con OCR</h2></div>
+    <p class="ayuda">Sube <strong>imágenes</strong> (una por caja) o un <strong>documento PDF</strong> (una caja por página).
+      El sistema detecta el formato solo, lee el modelo y la línea <em>«CANTIDAD EN CAJA»</em> de cada caja por separado,
+      calcula <strong>cantidad × precio</strong> y, al confirmar, suma las unidades al stock.</p>
+    <!-- Aviso que solo aparece si el servidor no tiene ningun motor OCR (lo llena app.js con /api/health) -->
+    <p id="aviso-ocr" class="aviso-ocr" hidden></p>
+    <div class="barra">
+      <!-- multiple: se pueden elegir varios archivos. capture no se usa aqui para poder elegir PDF -->
+      <input id="foto-caja" type="file" accept="image/*,application/pdf,.pdf" multiple aria-label="Imágenes o PDF de las cajas">
+      <button id="btn-leer-caja" class="btn" type="button">Leer cajas</button>
+      <button id="btn-camara" class="btn btn-claro" type="button" title="En el celular abre la cámara">Tomar foto</button>
+      <input id="foto-camara" type="file" accept="image/*" capture="environment" hidden>
+    </div>
+    <div class="barra" id="ejemplos-caja" style="margin-top:8px">
+      <span class="ayuda" style="margin:0">Ejemplos:</span>
+      <button class="btn btn-claro btn-mini" type="button" data-caja="caja_Galaxy_A15.png">Imagen Galaxy A15</button>
+      <button class="btn btn-claro btn-mini" type="button" data-caja="caja_iPhone_13.png">Imagen iPhone 13</button>
+      <button class="btn btn-claro btn-mini" type="button" data-caja="caja_Redmi_Note_13.png">Imagen Redmi Note 13</button>
+      <button class="btn btn-claro btn-mini" type="button" data-caja="cajas_de_prueba.pdf">PDF con las 3 cajas</button>
+    </div>
+    <div id="res-ocr" hidden>
+      <div class="chips" id="resumen-ocr"></div>
+      <div id="lista-cajas" class="cajas-grid"></div>
+      <div class="barra" style="margin-top:12px">
+        <button id="btn-ingresar-caja" class="btn" type="button">Ingresar cajas al inventario</button>
+        <span id="nota-ocr" class="ayuda" style="margin:0"></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="contenedor pie">
+  <p>La API que alimenta esta página es la misma que consumirá el chatbot: <code>GET /api/inventario</code>, <code>GET /api/celulares?q=…</code>, <code>GET /api/contexto</code>.</p>
+</footer>
+
+<dialog id="dlg">
+  <form id="form" method="dialog">
+    <h3 id="dlg-titulo">Agregar celular</h3>
+    <div class="campos">
+      <label>Modelo<input name="nombre" required></label>
+      <label>Marca<input name="marca" required></label>
+      <label>Precio (CLP)<input name="precio" type="number" min="0" step="1" required></label>
+      <label>Cantidad<input name="cantidad" type="number" min="0" step="1" value="0" required></label>
+      <label>Pantalla<input name="pantalla"></label>
+      <label>RAM<input name="ram"></label>
+      <label>Almacenamiento<input name="almacenamiento"></label>
+      <label>Batería<input name="bateria"></label>
+      <label>Cámara<input name="camara"></label>
+      <label>Color<input name="color"></label>
+      <label class="ancho">Imagen del producto (opcional)<input name="archivo" type="file" accept="image/*"></label>
+    </div>
+    <p id="dlg-error" class="error" role="alert" hidden></p>
+    <div class="acciones-dlg">
+      <button type="button" id="dlg-cancelar" class="btn btn-claro">Cancelar</button>
+      <button type="submit" class="btn">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación de la API</title>
+<link rel="stylesheet" href="/static/css/estilos.css">
+<style>
+  .ep { border-top: 1px solid var(--borde); padding: 14px 0; }
+  .ep h3 { margin: 0 0 4px; font-size: 1.05rem; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .m { font-size: .8rem; font-weight: 700; padding: 2px 8px; border-radius: 5px; color: #fff; background: #2f7d32; }
+  .m.post { background: #1565c0; } .m.put, .m.patch { background: #b26a00; } .m.delete { background: #b3261e; }
+  pre { background: color-mix(in srgb, var(--borde) 40%, transparent); padding: 10px 12px; border-radius: 8px; overflow-x: auto; font-size: .88rem; margin: 8px 0; }
+  .salida { max-height: 260px; overflow: auto; }
+  .ep p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<header class="cabecera">
+  <div class="contenedor cabecera-in">
+    <div><p class="sup">Para el chatbot</p><h1>Documentación de la API</h1>
+      <p class="sub">Todas las respuestas son JSON · CORS habilitado · sin autenticación (uso académico)</p></div>
+    <nav><a href="/" class="btn btn-claro">Volver al panel</a></nav>
+  </div>
+</header>
+<main class="contenedor">
+  <section class="panel">
+    <h2>Cómo conectarse</h2>
+    <p>URL base: <code id="base">http://localhost:5000/api</code>. Si el chatbot corre en otro computador de la misma red, usa la IP de este equipo (por ejemplo <code>http://192.168.1.20:5000/api</code>).</p>
+    <p>Lo más cómodo para un chatbot: <code>GET /api/contexto</code> devuelve un texto con todo el catálogo y el stock, listo para pegarlo en el prompt; y <code>GET /api/celulares?q=…</code> busca un modelo concreto.</p>
+  </section>
+
+  <section class="panel" id="lista"></section>
+</main>
+<script>
+const base = location.origin + "/api";
+document.getElementById("base").textContent = base;
+const EP = [
+  ["get", "/api/inventario", "Resumen completo: items con precio_x_cantidad, total_inventario, total_unidades, por_revisar.", null],
+  ["get", "/api/contexto", "Texto plano del inventario para el prompt del chatbot (campo \"texto\") más el mismo resumen.", null],
+  ["get", "/api/celulares?q=galaxy", "Lista celulares. Filtros: q (texto en modelo o marca), marca, con_stock=1.", null],
+  ["get", "/api/celulares/1", "Un celular por id.", null],
+  ["post", "/api/celulares", "Crea un celular. Obligatorios: nombre, marca, precio.", '{"nombre":"Moto G54","marca":"Motorola","precio":139990,"cantidad":3}'],
+  ["put", "/api/celulares/1", "Actualiza campos de un celular (parcial).", '{"precio":125990}'],
+  ["patch", "/api/celulares/1/stock", "Fija el stock con {\"cantidad\":n} o lo ajusta con {\"delta\":-2}.", '{"delta":-1}'],
+  ["delete", "/api/celulares/1", "Elimina un celular.", null],
+  ["post", "/api/celulares/1/imagen", "multipart/form-data, campo \"imagen\" (png, jpg, webp). Reemplaza la foto del producto.", null],
+  ["post", "/api/detectar", "multipart/form-data: \"imagen\" (foto del estante) y opcional \"cajas\" (JSON [[x0,y0,x1,y1],…]). Devuelve conteo y detalle por equipo.", null],
+  ["post", "/api/ocr", "multipart/form-data: uno o varios archivos en el campo \"imagen\" (png, jpg, webp o PDF; el formato se detecta solo). Cada imagen y cada página de PDF es UNA caja que se lee y calcula por separado (cantidad × precio). Sin \"aplicar\" es vista previa; con aplicar=1 suma las unidades al stock. Devuelve \"lecturas\": una por caja (409 si ya se ingresó; forzar=1 lo permite).", null],
+  ["post", "/api/inventario/aplicar", "Aplica un conteo al stock: {\"conteo\":[{\"id\":1,\"cantidad\":6}],\"por_revisar\":1}.", null],
+  ["get", "/api/movimientos?limite=20", "Historial de cambios de stock.", null],
+  ["get", "/api/health", "Comprueba que el servicio responde.", null],
+];
+const cont = document.getElementById("lista");
+cont.append(Object.assign(document.createElement("h2"), { textContent: "Endpoints" }));
+for (const [m, ruta, desc, cuerpo] of EP) {
+  const d = document.createElement("div"); d.className = "ep";
+  const h = document.createElement("h3");
+  const sp = Object.assign(document.createElement("span"), { className: "m " + m, textContent: m.toUpperCase() });
+  h.append(sp, Object.assign(document.createElement("code"), { textContent: ruta }));
+  d.append(h, Object.assign(document.createElement("p"), { textContent: desc }));
+  if (cuerpo) d.append(Object.assign(document.createElement("pre"), { textContent: "Cuerpo JSON: " + cuerpo }));
+  if (m === "get") {
+    const b = Object.assign(document.createElement("button"), { className: "btn btn-claro btn-mini", textContent: "Probar" });
+    const out = Object.assign(document.createElement("pre"), { className: "salida", hidden: true });
+    b.onclick = async () => {
+      out.hidden = false; out.textContent = "Cargando…";
+      try { const r = await fetch(ruta); out.textContent = JSON.stringify(await r.json(), null, 2); }
+      catch (e) { out.textContent = "Error: " + e.message; }
+    };
+    d.append(b, out);
+  }
+  cont.append(d);
+}
+</script>
+</body>
+</html>

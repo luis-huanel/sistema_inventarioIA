@@ -1,0 +1,53 @@
+{
+  "categoria": "celulares",
+  "items": [
+    {
+      "id": 1,
+      "nombre": "Galaxy A15",
+      "marca": "Samsung",
+      "precio": 129990,
+      "cantidad": 6,
+      "precio_x_cantidad": 779940,
+      "almacenamiento": "128 GB",
+      "ram": "4 GB",
+      "pantalla": "6,5\"",
+      "bateria": "5000 mAh",
+      "camara": "50 MP + 5 MP + 2 MP",
+      "color": "Negro",
+      "imagen": "imagenes/Galaxy_A15_frente.png"
+    },
+    {
+      "id": 2,
+      "nombre": "iPhone 13",
+      "marca": "Apple",
+      "precio": 599990,
+      "cantidad": 3,
+      "precio_x_cantidad": 1799970,
+      "almacenamiento": "128 GB",
+      "ram": "4 GB",
+      "pantalla": "6,1\"",
+      "bateria": "3240 mAh",
+      "camara": "12 MP + 12 MP",
+      "color": "Rosa",
+      "imagen": "imagenes/iPhone_13_frente.png"
+    },
+    {
+      "id": 3,
+      "nombre": "Redmi Note 13",
+      "marca": "Xiaomi",
+      "precio": 159990,
+      "cantidad": 5,
+      "precio_x_cantidad": 799950,
+      "almacenamiento": "128 GB",
+      "ram": "6 GB",
+      "pantalla": "6,67\"",
+      "bateria": "5000 mAh",
+      "camara": "108 MP + 8 MP + 2 MP",
+      "color": "Verde azulado",
+      "imagen": "imagenes/Redmi_Note_13_frente.png"
+    }
+  ],
+  "total_inventario": 3379860,
+  "por_revisar": 1,
+  "equipos_detectados": 15
+}
